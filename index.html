@@ -1,0 +1,1263 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>Tako Empréstimos - Solução Rápida</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: system-ui, 'Segoe UI', 'Poppins', sans-serif;
+        }
+
+        /* LOADER FULLSCREEN */
+        #loader-wrapper {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(145deg, #0b2b26 0%, #0a3b33 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            transition: opacity 0.5s ease;
+            flex-direction: column;
+            gap: 2rem;
+        }
+        .tako-loader {
+            text-align: center;
+            color: #f5b042;
+        }
+        .tako-loader h1 {
+            font-size: 3rem;
+            letter-spacing: 4px;
+            margin-bottom: 20px;
+            font-weight: 800;
+            text-shadow: 0 0 10px #ffb347;
+        }
+        .spinner {
+            width: 60px;
+            height: 60px;
+            border: 6px solid rgba(255,180,71,0.2);
+            border-top: 6px solid #f5b042;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .loader-text {
+            font-size: 1.2rem;
+            color: #fff3e0;
+        }
+
+        /* MAIN APP - escondido inicialmente */
+        #main-app {
+            display: none;
+            background: #fef9ef;
+            min-height: 100vh;
+        }
+
+        /* CARD & FORM GERAL */
+        .container {
+            max-width: 500px;
+            margin: 0 auto;
+            padding: 20px 16px 40px;
+        }
+        .card {
+            background: white;
+            border-radius: 32px;
+            padding: 24px 20px;
+            margin-bottom: 24px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.05);
+            border: 1px solid #ffe1b3;
+        }
+        .form-group {
+            margin-bottom: 18px;
+        }
+        label {
+            font-weight: 600;
+            color: #2d5a4c;
+            display: block;
+            margin-bottom: 6px;
+            font-size: 0.9rem;
+        }
+        input, select, textarea {
+            width: 100%;
+            padding: 14px 16px;
+            border-radius: 28px;
+            border: 1.5px solid #e2dccd;
+            background: #fffcf5;
+            font-size: 1rem;
+            transition: 0.2s;
+        }
+        input:focus, select:focus, textarea:focus {
+            border-color: #f5b042;
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(245,176,66,0.2);
+        }
+        button {
+            background: #f5b042;
+            color: #2c3e2f;
+            border: none;
+            padding: 14px 18px;
+            font-weight: bold;
+            font-size: 1rem;
+            border-radius: 40px;
+            width: 100%;
+            cursor: pointer;
+            transition: 0.2s;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        button:active { transform: scale(0.97); background: #e09d2c; }
+        .btn-outline {
+            background: transparent;
+            border: 2px solid #f5b042;
+            color: #f5b042;
+        }
+        .loan-levels {
+            display: grid;
+            grid-template-columns: repeat(2,1fr);
+            gap: 12px;
+            margin: 20px 0;
+        }
+        .level-btn {
+            background: #f8ede0;
+            border-radius: 28px;
+            padding: 12px;
+            text-align: center;
+            font-weight: bold;
+            color: #2d5a4c;
+            border: 1px solid #ffe0b5;
+            transition: 0.2s;
+            cursor: pointer;
+        }
+        .level-btn:active { transform: scale(0.97); }
+        .level-btn.locked {
+            opacity: 0.5;
+            filter: grayscale(0.1);
+            background: #e2ddd2;
+            pointer-events: none;
+        }
+        .badge {
+            background: #2d5a4c;
+            color: white;
+            border-radius: 60px;
+            padding: 4px 12px;
+            font-size: 0.7rem;
+            display: inline-block;
+            margin-top: 8px;
+        }
+
+        hr {
+            margin: 16px 0;
+            border: 0;
+            height: 1px;
+            background: #ffe1b3;
+        }
+        .status-success {
+            background: #d4edda;
+            color: #155724;
+            padding: 12px;
+            border-radius: 28px;
+            text-align: center;
+        }
+        .hidden { display: none; }
+        .whatsapp-note {
+            background: #25d36610;
+            border-left: 4px solid #25D366;
+            padding: 10px;
+            font-size: 0.8rem;
+            border-radius: 12px;
+            margin-bottom: 15px;
+        }
+        .btn-whatsapp {
+            background: #25D366;
+            color: white;
+        }
+        .btn-whatsapp:active { background: #1da85c; }
+        .btn-pagar {
+            background: #f5b042;
+            color: #2c3e2f;
+            margin-top: 16px;
+            width: 100%;
+            padding: 14px;
+            border-radius: 40px;
+            font-weight: bold;
+            font-size: 1rem;
+            border: none;
+            cursor: pointer;
+            transition: 0.2s;
+            box-shadow: 0 4px 15px rgba(245,176,66,0.3);
+        }
+        .btn-pagar:active { transform: scale(0.97); background: #e09d2c; }
+        .btn-cancel {
+            background: #dc3545;
+            color: white;
+            margin-top: 10px;
+        }
+        .btn-cancel:active { background: #c82333; }
+        .success-msg {
+            background: #d4edda;
+            color: #155724;
+            padding: 15px;
+            border-radius: 28px;
+            text-align: center;
+            margin-top: 15px;
+            display: none;
+        }
+
+        /* ===== CARTÃO VISA PREMIUM ===== */
+        .visa-card.premium {
+            background: linear-gradient(135deg, #0a1a1a 0%, #1a2d2d 30%, #0d1f1f 60%, #1a2a2a 100%);
+            border-radius: 28px;
+            padding: 28px 24px 24px;
+            position: relative;
+            overflow: hidden;
+            min-height: 280px;
+            box-shadow: 
+                0 20px 60px rgba(0,0,0,0.5),
+                0 0 0 1px rgba(245,176,66,0.1),
+                inset 0 1px 0 rgba(255,255,255,0.05);
+            transition: all 0.3s ease;
+            border: none;
+        }
+
+        .visa-card.premium:hover {
+            transform: translateY(-3px);
+            box-shadow: 
+                0 25px 70px rgba(0,0,0,0.6),
+                0 0 0 1px rgba(245,176,66,0.15),
+                inset 0 1px 0 rgba(255,255,255,0.08);
+        }
+
+        .card-glow {
+            position: absolute;
+            top: -30%;
+            right: -20%;
+            width: 70%;
+            height: 70%;
+            background: radial-gradient(ellipse, rgba(245,176,66,0.08) 0%, transparent 70%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .card-shine {
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle at 30% 20%, rgba(255,255,255,0.03) 0%, transparent 60%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 24px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .card-chip {
+            opacity: 0.9;
+            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
+        }
+
+        .card-brand-logo {
+            text-align: center;
+            margin-left: 10px;
+        }
+
+        .brand-text {
+            font-size: 1.6rem;
+            font-weight: 800;
+            color: #f5b042;
+            letter-spacing: 4px;
+            display: block;
+            text-shadow: 0 2px 10px rgba(245,176,66,0.3);
+        }
+
+        .brand-sub {
+            font-size: 0.55rem;
+            color: rgba(255,215,0,0.4);
+            letter-spacing: 3px;
+            font-weight: 300;
+        }
+
+        .card-type {
+            text-align: right;
+        }
+
+        .card-type .visa-text {
+            display: block;
+            font-size: 0.7rem;
+            color: rgba(255,255,255,0.3);
+            letter-spacing: 2px;
+            font-weight: 300;
+        }
+
+        .card-number-section {
+            margin: 20px 0 24px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .card-number-label {
+            color: rgba(255,255,255,0.3);
+            font-size: 0.6rem;
+            letter-spacing: 2px;
+            font-weight: 300;
+            margin-bottom: 4px;
+        }
+
+        .card-number-display {
+            display: flex;
+            gap: 12px;
+            font-family: 'Courier New', monospace;
+            font-size: 1.2rem;
+            letter-spacing: 3px;
+            color: #fff;
+            font-weight: 500;
+        }
+
+        .card-number-display span {
+            background: rgba(255,255,255,0.03);
+            padding: 2px 8px;
+            border-radius: 4px;
+            border: 1px solid rgba(255,255,255,0.03);
+        }
+
+        .card-number-display #cardLastDigits {
+            color: #f5b042;
+            border-color: rgba(245,176,66,0.15);
+        }
+
+        .card-details-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1.2fr;
+            gap: 12px;
+            margin: 16px 0 20px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .card-detail-item .detail-label {
+            color: rgba(255,255,255,0.3);
+            font-size: 0.55rem;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            font-weight: 300;
+            margin-bottom: 2px;
+        }
+
+        .card-detail-item .detail-value {
+            color: #fff;
+            font-size: 0.85rem;
+            font-weight: 500;
+            letter-spacing: 0.5px;
+        }
+
+        .card-detail-item.highlight .detail-value {
+            color: #f5b042;
+            font-size: 1.1rem;
+            font-weight: 700;
+        }
+
+        .card-detail-item.highlight .detail-label {
+            color: rgba(245,176,66,0.5);
+        }
+
+        .card-footer-premium {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-top: 16px;
+            border-top: 1px solid rgba(255,255,255,0.05);
+            position: relative;
+            z-index: 1;
+            margin-top: 8px;
+        }
+
+        .status-container {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .status-indicator {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            display: inline-block;
+            animation: pulse 1.5s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
+        }
+
+        .status-text {
+            font-size: 0.7rem;
+            font-weight: 600;
+            letter-spacing: 1px;
+        }
+
+        .days-container {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            color: rgba(255,255,255,0.5);
+            font-size: 0.75rem;
+        }
+
+        .days-text strong {
+            color: #fff;
+            font-weight: 700;
+        }
+
+        .loan-progress {
+            margin-top: 16px;
+            padding-top: 16px;
+            border-top: 1px solid rgba(255,255,255,0.05);
+            position: relative;
+            z-index: 1;
+        }
+
+        .progress-bar-bg {
+            width: 100%;
+            height: 4px;
+            background: rgba(255,255,255,0.06);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .progress-bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #f5b042, #ffd700);
+            border-radius: 4px;
+            transition: width 0.6s ease;
+        }
+
+        .progress-info {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 6px;
+            font-size: 0.6rem;
+            color: rgba(255,255,255,0.3);
+            letter-spacing: 1px;
+        }
+
+        .progress-info span:last-child {
+            color: rgba(245,176,66,0.6);
+        }
+
+        .btn-pagar.premium-btn {
+            background: linear-gradient(135deg, #f5b042, #e09d2c);
+            color: #1a2d2d;
+            margin-top: 20px;
+            padding: 16px;
+            border-radius: 50px;
+            font-weight: 700;
+            font-size: 1rem;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 20px rgba(245,176,66,0.25);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .btn-pagar.premium-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 30px rgba(245,176,66,0.35);
+        }
+
+        .btn-pagar.premium-btn:active {
+            transform: scale(0.97);
+        }
+
+        .btn-icon {
+            font-size: 1.2rem;
+        }
+
+        .status-container .status-indicator.active {
+            background: #28a745;
+        }
+
+        .status-container .status-indicator.warning {
+            background: #ffc107;
+        }
+
+        .status-container .status-indicator.danger {
+            background: #dc3545;
+        }
+
+        /* MODAL DE CONFIRMAÇÃO DE EMPRÉSTIMO */
+        #loanModal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.7);
+            backdrop-filter: blur(4px);
+            justify-content: center;
+            align-items: center;
+            z-index: 10000;
+            padding: 20px;
+            overflow-y: auto;
+        }
+        #loanModal .modal-content {
+            background: white;
+            max-width: 450px;
+            width: 100%;
+            border-radius: 40px;
+            padding: 28px 24px;
+            max-height: 90vh;
+            overflow-y: auto;
+            position: relative;
+        }
+        #loanModal .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #f5b042;
+            padding-bottom: 15px;
+        }
+        #loanModal .modal-header h2 {
+            color: #2d5a4c;
+            font-size: 1.3rem;
+        }
+        #loanModal .close-modal {
+            background: none;
+            border: none;
+            font-size: 2rem;
+            cursor: pointer;
+            color: #666;
+            width: auto;
+            padding: 0 10px;
+        }
+        #loanModal .close-modal:hover { color: #000; }
+        #loanModal .info-detail {
+            background: #f8f4ec;
+            border-radius: 16px;
+            padding: 12px 16px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+        }
+        #loanModal .info-detail .label {
+            color: #666;
+            font-weight: 500;
+        }
+        #loanModal .info-detail .value {
+            color: #2d5a4c;
+            font-weight: 700;
+        }
+        #loanModal .btn-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        #loanModal .btn-group button {
+            flex: 1;
+        }
+        .loan-summary {
+            background: #fff8ee;
+            border-radius: 20px;
+            padding: 15px;
+            margin: 15px 0;
+            border: 2px solid #f5b042;
+        }
+        .loan-summary h4 {
+            color: #2d5a4c;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+
+        /* MODAL DE PAGAMENTO */
+        #paymentModal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.7);
+            backdrop-filter: blur(4px);
+            justify-content: center;
+            align-items: center;
+            z-index: 10000;
+            padding: 20px;
+        }
+        #paymentModal .modal-content {
+            background: white;
+            max-width: 400px;
+            width: 100%;
+            border-radius: 40px;
+            padding: 24px;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+        #paymentModal .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #f5b042;
+            padding-bottom: 15px;
+        }
+        #paymentModal .modal-header h3 {
+            color: #2d5a4c;
+        }
+        #paymentModal .close-modal {
+            background: none;
+            border: none;
+            font-size: 2rem;
+            cursor: pointer;
+            color: #666;
+            width: auto;
+            padding: 0 10px;
+        }
+
+        /* Responsive */
+        @media (max-width: 480px) {
+            .card-number-display {
+                font-size: 1rem;
+                gap: 8px;
+                flex-wrap: wrap;
+            }
+            .card-details-grid {
+                grid-template-columns: 1fr 1fr;
+                gap: 8px;
+            }
+            .card-detail-item.highlight {
+                grid-column: span 2;
+            }
+            .card-header {
+                flex-wrap: wrap;
+                gap: 8px;
+            }
+            .brand-text {
+                font-size: 1.2rem;
+            }
+            .loan-levels {
+                grid-template-columns: 1fr 1fr;
+                gap: 8px;
+            }
+            .level-btn {
+                padding: 10px;
+                font-size: 0.9rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div id="loader-wrapper">
+    <div class="tako-loader">
+        <div class="spinner"></div>
+        <h1>TAKO NA HORA</h1>
+        <div class="loader-text">Carregando ambiente seguro...</div>
+    </div>
+</div>
+
+<div id="main-app">
+    <div class="container">
+        <!-- ÁREA DE CADASTRO -->
+        <div id="cadastroSection">
+            <div class="card">
+                <h2 style="color:#2d5a4c; margin-bottom: 8px;">📝 Cadastro Obrigatório</h2>
+                <p style="margin-bottom: 20px; font-size: 0.9rem;">Preencha com os seus dados oficiais</p>
+                <div class="whatsapp-note">
+                    📱 Todas as solicitações serão enviadas para o WhatsApp <strong>86 704 7493</strong>
+                </div>
+                <form id="cadastroForm">
+                    <div class="form-group"><label>Nome completo (como no Bilhete)</label><input type="text" id="nomeCompleto" required placeholder="Insira nome"></div>
+                    <div class="form-group"><label>Número do Bilhete</label><input type="text" id="numBilhete" required placeholder="84 ou 85"></div>
+                    <div class="form-group"><label>Data de Nascimento</label><input type="date" id="dataNasc" required></div>
+                    <div class="form-group"><label>Província</label><select id="provincia" required></select></div>
+                    <div class="form-group"><label>Distrito</label><select id="distrito" required><option value="">Selecione primeiro a província</option></select></div>
+                    <div class="form-group"><label>Bairro</label><input type="text" id="bairro" placeholder="Digite o nome do seu bairro" required></div>
+                    <div class="form-group"><label>Número do cliente (receber dinheiro)</label><input type="tel" id="numeroCliente" required placeholder="84 ou 85XXXXXX"></div>
+                    <div class="form-group"><label>Email do cliente</label><input type="email" id="emailCliente" required placeholder="g@email.com"></div>
+                    <button type="submit">✅ Finalizar Cadastro</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- ÁREA PRINCIPAL APÓS CADASTRO -->
+        <div id="dashboardSection" style="display:none;">
+            <div class="card">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <h2>💰 Olá, <span id="userNameDisplay"></span></h2>
+                    <span class="badge">Nível <span id="nivelAtualSpan">1</span></span>
+                </div>
+                <hr>
+                <p><strong>Progresso para próximo nível:</strong> <span id="progressoTexto"></span></p>
+                <div style="background:#eee; border-radius: 30px; overflow:hidden; margin: 12px 0;">
+                    <div id="progressBarFill" style="height:10px; background:#f5b042; width:0%;"></div>
+                </div>
+            </div>
+
+            <!-- Painel de níveis / empréstimo -->
+            <div class="card">
+                <h3>📌 Escolha o Nível de Empréstimo</h3>
+                <div id="levelsContainer" class="loan-levels"></div>
+                <div id="infoNivelMsg" class="status-success" style="margin-top: 10px;"></div>
+            </div>
+
+            <!-- Mensagem de sucesso após solicitação -->
+            <div id="successMsg" class="success-msg">
+                ✅ Solicitação enviada com sucesso! Aguarde confirmação no WhatsApp.
+            </div>
+
+            <!-- CARTÃO DA DÍVIDA ATIVA - VISA PREMIUM -->
+            <div id="debtCardPanel" style="display:none;">
+                <div class="visa-card premium">
+                    <div class="card-glow"></div>
+                    <div class="card-shine"></div>
+                    
+                    <div class="card-header">
+                        <div class="card-chip">
+                            <svg width="45" height="35" viewBox="0 0 45 35">
+                                <rect x="2" y="2" width="41" height="31" rx="4" fill="none" stroke="#d4a843" stroke-width="1.5"/>
+                                <ellipse cx="14" cy="17" rx="7" ry="5" fill="none" stroke="#d4a843" stroke-width="1.2"/>
+                                <ellipse cx="14" cy="17" rx="4" ry="3" fill="none" stroke="#d4a843" stroke-width="1"/>
+                                <line x1="5" y1="10" x2="5" y2="24" stroke="#d4a843" stroke-width="0.8"/>
+                                <line x1="23" y1="10" x2="23" y2="24" stroke="#d4a843" stroke-width="0.8"/>
+                            </svg>
+                        </div>
+                        <div class="card-brand-logo">
+                            <span class="brand-text">TAKO</span>
+                            <span class="brand-sub">F I N A N C E</span>
+                        </div>
+                        <div class="card-type">
+                            <span>💳</span>
+                            <span class="visa-text">VISA</span>
+                        </div>
+                    </div>
+
+                    <div class="card-number-section">
+                        <div class="card-number-label">Número do Cartão</div>
+                        <div class="card-number-display" id="debtCardNumber">
+                            <span>****</span>
+                            <span>****</span>
+                            <span>****</span>
+                            <span id="cardLastDigits">2026</span>
+                        </div>
+                    </div>
+
+                    <div class="card-details-grid">
+                        <div class="card-detail-item">
+                            <div class="detail-label">TITULAR</div>
+                            <div class="detail-value" id="debtCardHolder">---</div>
+                        </div>
+                        <div class="card-detail-item">
+                            <div class="detail-label">VALIDADE</div>
+                            <div class="detail-value" id="debtCardDue">---</div>
+                        </div>
+                        <div class="card-detail-item highlight">
+                            <div class="detail-label">VALOR</div>
+                            <div class="detail-value amount" id="debtCardValue">0 MT</div>
+                        </div>
+                    </div>
+
+                    <div class="card-footer-premium">
+                        <div class="status-container">
+                            <span class="status-indicator active" id="debtCardStatus"></span>
+                            <span class="status-text" id="debtCardStatusText">ATIVO</span>
+                        </div>
+                        <div class="days-container">
+                            <span class="days-icon">⏳</span>
+                            <span class="days-text" id="debtCardDays"><strong>0</strong> dias restantes</span>
+                        </div>
+                    </div>
+
+                    <div class="loan-progress">
+                        <div class="progress-bar-bg">
+                            <div class="progress-bar-fill" id="debtProgressBar" style="width: 0%;"></div>
+                        </div>
+                        <div class="progress-info">
+                            <span>Progresso do empréstimo</span>
+                            <span id="debtProgressPercent">0%</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <button id="pagarDebtBtn" class="btn-pagar premium-btn">
+                    <span class="btn-icon">💸</span>
+                    Fazer Pagamento via WhatsApp
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL DE CONFIRMAÇÃO DE EMPRÉSTIMO -->
+<div id="loanModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>📋 Confirmar Empréstimo</h2>
+            <button class="close-modal" id="closeLoanModal">&times;</button>
+        </div>
+        
+        <div class="whatsapp-note">
+            📱 Ao confirmar, será aberto o WhatsApp para enviar a solicitação para <strong>86 704 7493</strong>
+        </div>
+
+        <div class="loan-summary">
+            <h4>📌 Resumo do Empréstimo</h4>
+            <div id="loanSummaryDetails"></div>
+        </div>
+
+        <div style="margin: 15px 0;">
+            <p style="font-weight: 600; color: #2d5a4c; margin-bottom: 10px;">👤 Dados do Cliente</p>
+            <div class="info-detail"><span class="label">Nome:</span><span class="value" id="modalNome"></span></div>
+            <div class="info-detail"><span class="label">Bilhete:</span><span class="value" id="modalBilhete"></span></div>
+            <div class="info-detail"><span class="label">Nº Cliente:</span><span class="value" id="modalNumero"></span></div>
+            <div class="info-detail"><span class="label">Email:</span><span class="value" id="modalEmail"></span></div>
+            <div class="info-detail"><span class="label">Localização:</span><span class="value" id="modalLocalizacao"></span></div>
+        </div>
+
+        <div class="btn-group">
+            <button class="btn-cancel" id="cancelLoanBtn">Cancelar</button>
+            <button class="btn-whatsapp" id="confirmLoanBtn">📲 Enviar para WhatsApp</button>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL DE PAGAMENTO -->
+<div id="paymentModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>📤 Pagar Empréstimo</h3>
+            <button class="close-modal" id="closePaymentModal">&times;</button>
+        </div>
+        <div class="whatsapp-note">
+            📱 Enviar comprovativo para <strong>86 704 7493</strong>
+        </div>
+        <form id="pagamentoFormulario">
+            <div class="form-group"><label>Mensagem de pagamento (comprovativo)</label>
+                <textarea id="msgPagamento" rows="3" Insira mensagem do pagamento" style="border-radius:20px;"></textarea>
+            </div>
+            <div class="form-group"><label>Nome do Cliente</label><input id="pagNome" readonly></div>
+            <div class="form-group"><label>Data/Hora</label><input id="pagHora" readonly></div>
+            <div class="form-group"><label>Número do cliente</label><input id="pagNumero" readonly></div>
+            <div class="form-group"><label>Valor a pagar</label><input id="pagValor" readonly></div>
+            <button type="button" id="sendPaymentWhatsBtn" class="btn-whatsapp">📲 Enviar Pagamento via WhatsApp</button>
+            <button type="button" id="closeModalBtn" style="background:#ccc; margin-top:10px;">Cancelar</button>
+        </form>
+    </div>
+</div>
+
+<script>
+    // NÚMERO DO SUPORTE WHATSAPP FIXO
+    const WHATSAPP_NUMBER = "867047493";
+
+    // ---------- DADOS DOS NÍVEIS ----------
+    const niveis = [
+        { id:1, valor:20, pagamento:30, juro:10, duracao:7, qtdParaLiberar:10, nome:"Nível 1" },
+        { id:2, valor:50, pagamento:70, juro:20, duracao:7, qtdParaLiberar:15, nome:"Nível 2" },
+        { id:3, valor:150, pagamento:210, juro:60, duracao:7, qtdParaLiberar:15, nome:"Nível 3" },
+        { id:4, valor:550, pagamento:670, juro:120, duracao:26, qtdParaLiberar:10, nome:"Nível 4" },
+        { id:5, valor:2500, pagamento:2850, juro:350, duracao:31, qtdParaLiberar:8, nome:"Nível 5" },
+        { id:6, valor:7500, pagamento:9000, juro:1500, duracao:37, qtdParaLiberar:8, nome:"Nível 6" },
+        { id:7, valor:15000, pagamento:18000, juro:3000, duracao:40, qtdParaLiberar:9, nome:"Nível 7" },
+        { id:8, valor:35000, pagamento:41000, juro:6000, duracao:50, qtdParaLiberar:10, nome:"Nível 8" },
+        { id:9, valor:60000, pagamento:70000, juro:10000, duracao:60, qtdParaLiberar:11, nome:"Nível 9" },
+        { id:10, valor:100000, pagamento:150000, juro:50000, duracao:70, qtdParaLiberar:12, nome:"Nível 10" }
+    ];
+
+    // Variáveis de estado do usuário (persiste no localStorage)
+    let usuario = null;
+    let nivelSelecionado = null;
+
+    function saveUserToStorage() { 
+        if(usuario) {
+            usuario._lastLogin = new Date().toISOString();
+            localStorage.setItem('takoUser', JSON.stringify(usuario)); 
+        }
+    }
+    function loadUserFromStorage() { 
+        const data = localStorage.getItem('takoUser'); 
+        if(data) { 
+            usuario = JSON.parse(data); 
+            return true; 
+        } 
+        return false; 
+    }
+
+    // Províncias e distritos
+    const provinciasMocambique = ["Maputo Cidade","Maputo Província","Gaza","Inhambane","Manica","Sofala","Tete","Zambézia","Nampula","Cabo Delgado","Niassa"];
+    const distritosPorProvincia = {
+        "Maputo Cidade":["KaMpfumo","Nlhamankulu","KaMaxakeni","KaMavota","KaMubukwana","Katembe"],
+        "Maputo Província":["Matola","Boane","Magude","Manhiça","Marracuene","Moamba","Namaacha"],
+        "Gaza":["Xai-Xai","Chibuto","Chicualacuala","Bilene","Chókwè","Guijá","Mabalane","Manjacaze","Massangena","Massingir"],
+        "Inhambane":["Inhambane","Maxixe","Funhalouro","Govuro","Homoine","Jangamo","Mabote","Massinga","Morrumbene","Panda","Vilanculos","Zavala"],
+        "Manica":["Chimoio","Bárue","Gondola","Guro","Macate","Machaze","Macossa","Manica","Mossurize","Sussundenga","Tambara"],
+        "Sofala":["Beira","Nhamatanda","Buzi","Caia","Chemba","Cheringoma","Chibabava","Dondo","Gorongosa","Marromeu","Muanza"],
+        "Tete":["Tete","Angónia","Cahora-Bassa","Changara","Chifunde","Chiuta","Macanga","Magoé","Marara","Moatize","Mutarara","Tsangano","Zumbo"],
+        "Zambézia":["Quelimane","Alto Molócuè","Chinde","Gile","Gurúè","Ile","Inhassunge","Lugela","Maganja da Costa","Milange","Mocuba","Mocubela","Molumbo","Mopeia","Morrumbala","Namacurra","Namarroi","Nicoadala","Pebane"],
+        "Nampula":["Nampula","Angoche","Eráti","Ilha de Moçambique","Lalaua","Malema","Meconta","Mecubúri","Memba","Mogincual","Mogovolas","Moma","Monapo","Mossuril","Muecate","Murrupula","Nacala-a-Velha","Nacala Porto","Rapale","Ribaué"],
+        "Cabo Delgado":["Pemba","Ancuabe","Balama","Chiúre","Ibo","Macomia","Mecúfi","Meluco","Mocímboa da Praia","Montepuez","Mueda","Muidumbe","Namuno","Nangade","Palma","Quissanga"],
+        "Niassa":["Lichinga","Cuamba","Lago","Majune","Mandimba","Marrupa","Maúa","Mavago","Mecanhelas","Mecula","Metarica","Muembe","N'gauma","Nipepe","Sanga"]
+    };
+
+    // Preencher províncias
+    function carregarProvincias() {
+        const selectProv = document.getElementById('provincia');
+        selectProv.innerHTML = '<option value="">Selecione</option>';
+        provinciasMocambique.forEach(p => {
+            const opt = document.createElement('option'); opt.value = p; opt.textContent = p;
+            selectProv.appendChild(opt);
+        });
+        selectProv.addEventListener('change', function() {
+            const prov = this.value;
+            const distSelect = document.getElementById('distrito');
+            if(prov && distritosPorProvincia[prov]) {
+                distSelect.innerHTML = '<option value="">Selecione o distrito</option>';
+                distritosPorProvincia[prov].forEach(d => {
+                    const opt = document.createElement('option'); opt.value = d; opt.textContent = d;
+                    distSelect.appendChild(opt);
+                });
+            } else { distSelect.innerHTML = '<option value="">Selecione primeiro a província</option>'; }
+        });
+    }
+
+    // Atualizar interface de níveis
+    function renderizarNiveis() {
+        if(!usuario) return;
+        const container = document.getElementById('levelsContainer');
+        container.innerHTML = '';
+        niveis.forEach(level => {
+            let liberado = (level.id <= usuario.nivelAtual);
+            const btn = document.createElement('div');
+            btn.className = `level-btn ${!liberado ? 'locked' : ''}`;
+            btn.innerHTML = `<strong>${level.nome}</strong><br>${level.valor} MT<br><span style="font-size:12px;">Paga: ${level.pagamento} MT</span><br>${liberado ? '✅ Disponível' : '🔒 Bloqueado'}`;
+            if(liberado) {
+                btn.onclick = () => abrirModalConfirmacao(level);
+            }
+            container.appendChild(btn);
+        });
+        const nivelAtualObj = niveis.find(n=> n.id === usuario.nivelAtual);
+        if(nivelAtualObj) {
+            const emprestimosFeitos = usuario.emprestimosFeitosNoNivel || 0;
+            const necessario = nivelAtualObj.qtdParaLiberar;
+            const resto = necessario - emprestimosFeitos;
+            document.getElementById('progressoTexto').innerText = `${emprestimosFeitos}/${necessario} empréstimos concluídos (faltam ${resto>0?resto:0}) para próximo nível.`;
+            const percent = (emprestimosFeitos/necessario)*100;
+            document.getElementById('progressBarFill').style.width = `${Math.min(100,percent)}%`;
+        }
+        document.getElementById('nivelAtualSpan').innerText = usuario.nivelAtual;
+        document.getElementById('userNameDisplay').innerText = usuario.nome.split(' ')[0];
+    }
+
+    // Abrir modal de confirmação
+    function abrirModalConfirmacao(level) {
+        if(level.id > usuario.nivelAtual) return alert("Nível bloqueado! Complete os empréstimos necessários.");
+        if(usuario.dividaAtiva) return alert("Você possui uma dívida ativa. Liquide antes de novo empréstimo.");
+        
+        nivelSelecionado = level;
+        const modal = document.getElementById('loanModal');
+        
+        // Preencher dados do cliente
+        document.getElementById('modalNome').textContent = usuario.nome;
+        document.getElementById('modalBilhete').textContent = usuario.bilhete;
+        document.getElementById('modalNumero').textContent = usuario.numero;
+        document.getElementById('modalEmail').textContent = usuario.email;
+        document.getElementById('modalLocalizacao').textContent = `${usuario.provincia}, ${usuario.distrito} - ${usuario.bairro}`;
+        
+        // Preencher resumo do empréstimo
+        const summaryHTML = `
+            <div class="info-detail"><span class="label">Nível:</span><span class="value">${level.nome}</span></div>
+            <div class="info-detail"><span class="label">💰 Valor solicitado:</span><span class="value">${level.valor} MT</span></div>
+            <div class="info-detail"><span class="label">💸 Total a pagar:</span><span class="value">${level.pagamento} MT</span></div>
+            <div class="info-detail"><span class="label">📈 Juro:</span><span class="value">${level.juro} MT</span></div>
+            <div class="info-detail"><span class="label">⏳ Prazo:</span><span class="value">${level.duracao} dias</span></div>
+        `;
+        document.getElementById('loanSummaryDetails').innerHTML = summaryHTML;
+        
+        modal.style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+    }
+
+    // Fechar modal de empréstimo
+    function fecharModalEmprestimo() {
+        document.getElementById('loanModal').style.display = 'none';
+        document.body.style.overflow = 'auto';
+        nivelSelecionado = null;
+    }
+
+    // Confirmar e enviar para WhatsApp
+    function confirmarEnvioWhatsApp() {
+        if(!nivelSelecionado || !usuario) return;
+        
+        const msg = criarMensagemEmprestimo(nivelSelecionado);
+        enviarWhatsApp(msg);
+        
+        // Criar dívida ativa
+        const dataInicio = new Date();
+        const dataFim = new Date();
+        dataFim.setDate(dataFim.getDate() + nivelSelecionado.duracao);
+        usuario.dividaAtiva = {
+            nivelId: nivelSelecionado.id,
+            valorPagar: nivelSelecionado.pagamento,
+            valorOriginal: nivelSelecionado.valor,
+            juro: nivelSelecionado.juro,
+            dataInicio: dataInicio.toISOString(),
+            dataLimite: dataFim.toISOString(),
+            diasRestantes: nivelSelecionado.duracao
+        };
+        saveUserToStorage();
+        atualizarDividaUI();
+        
+        fecharModalEmprestimo();
+        
+        // Mostrar mensagem de sucesso
+        const successMsg = document.getElementById('successMsg');
+        successMsg.style.display = 'block';
+        setTimeout(() => {
+            successMsg.style.display = 'none';
+        }, 8000);
+    }
+
+    function criarMensagemEmprestimo(level) {
+        const user = usuario;
+        let msg = `*TAKO NA HORA EMPRÉSTIMO - SOLICITAÇÃO*%0A%0A`;
+        msg += `📌 *DADOS PESSOAIS*%0A`;
+        msg += `Nome: ${user.nome}%0A`;
+        msg += `Nº Bilhete: ${user.bilhete}%0A`;
+        msg += `Data Nascimento: ${user.nascimento}%0A`;
+        msg += `Província: ${user.provincia}%0A`;
+        msg += `Distrito: ${user.distrito}%0A`;
+        msg += `Bairro: ${user.bairro || 'Não informado'}%0A`;
+        msg += `Nº Cliente: ${user.numero}%0A`;
+        msg += `Email: ${user.email}%0A%0A`;
+        msg += `📌 *DETALHES DO EMPRÉSTIMO*%0A`;
+        msg += `Nível: ${level.nome} (ID: ${level.id})%0A`;
+        msg += `💰 Valor solicitado: ${level.valor} MT%0A`;
+        msg += `💸 Total a pagar: ${level.pagamento} MT%0A`;
+        msg += `📈 Juro: ${level.juro} MT%0A`;
+        msg += `⏳ Prazo: ${level.duracao} dias%0A`;
+        msg += `📅 Data solicitação: ${new Date().toLocaleString()}`;
+        return msg;
+    }
+
+    // Função para enviar mensagem para o WhatsApp em nova aba
+    function enviarWhatsApp(mensagem) {
+        const url = `https://wa.me/${WHATSAPP_NUMBER}?text=${mensagem}`;
+        window.open(url, '_blank');
+    }
+
+    function atualizarDividaUI() {
+        const divDebt = document.getElementById('debtCardPanel');
+        if(usuario && usuario.dividaAtiva) {
+            divDebt.style.display = 'block';
+            const d = usuario.dividaAtiva;
+            const dataLimite = new Date(d.dataLimite);
+            const hoje = new Date();
+            const diffDays = Math.ceil((dataLimite - hoje) / (1000*60*60*24));
+            const diasRestantes = diffDays > 0 ? diffDays : 0;
+            const totalDias = niveis.find(n => n.id === d.nivelId)?.duracao || 30;
+            const progresso = ((totalDias - diasRestantes) / totalDias) * 100;
+            
+            // Atualizar elementos do cartão
+            document.getElementById('cardLastDigits').textContent = String(2026 + d.nivelId).slice(-4);
+            document.getElementById('debtCardHolder').textContent = usuario.nome.toUpperCase();
+            document.getElementById('debtCardValue').textContent = `${d.valorPagar} MT`;
+            document.getElementById('debtCardDue').textContent = dataLimite.toLocaleDateString('pt-PT', { 
+                day: '2-digit', 
+                month: 'short', 
+                year: 'numeric' 
+            });
+            
+            // Status e progresso
+            const statusIndicator = document.getElementById('debtCardStatus');
+            const statusText = document.getElementById('debtCardStatusText');
+            const progressFill = document.getElementById('debtProgressBar');
+            const progressPercent = document.getElementById('debtProgressPercent');
+            
+            progressFill.style.width = `${Math.min(100, progresso)}%`;
+            progressPercent.textContent = `${Math.round(Math.min(100, progresso))}%`;
+            
+            if(diasRestantes <= 3 && diasRestantes > 0) {
+                statusIndicator.className = 'status-indicator warning';
+                statusText.textContent = 'PRÓXIMO VENCIMENTO';
+                statusText.style.color = '#ffc107';
+            } else if(diasRestantes === 0) {
+                statusIndicator.className = 'status-indicator danger';
+                statusText.textContent = 'VENCIDO';
+                statusText.style.color = '#dc3545';
+            } else {
+                statusIndicator.className = 'status-indicator active';
+                statusText.textContent = 'ATIVO';
+                statusText.style.color = '#28a745';
+            }
+            
+            document.getElementById('debtCardDays').innerHTML = `<strong>${diasRestantes}</strong> dias restantes`;
+            
+        } else {
+            divDebt.style.display = 'none';
+        }
+    }
+
+    function iniciarPagamento() {
+        if(!usuario || !usuario.dividaAtiva) return alert("Nenhuma dívida ativa.");
+        const modal = document.getElementById('paymentModal');
+        document.getElementById('pagNome').value = usuario.nome;
+        const agora = new Date();
+        const horaStr = agora.toLocaleString();
+        document.getElementById('pagHora').value = horaStr;
+        document.getElementById('pagNumero').value = usuario.numero;
+        document.getElementById('pagValor').value = usuario.dividaAtiva.valorPagar + " MT";
+        document.getElementById('msgPagamento').value = '';
+        modal.style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+    }
+
+    function enviarPagamentoWhats() {
+        const mensagemPag = document.getElementById('msgPagamento').value.trim();
+        if(!mensagemPag) return alert("Por favor, descreva o comprovativo de pagamento (ex: código de transação, valor, data).");
+        const divida = usuario.dividaAtiva;
+        if(!divida) return alert("Sem dívida ativa.");
+        
+        let texto = `*TAKO NA HORA- PAGAMENTO DE EMPRÉSTIMO*%0A%0A`;
+        texto += `📌 *DADOS DO CLIENTE*%0A`;
+        texto += `Nome: ${usuario.nome}%0A`;
+        texto += `Nº Bilhete: ${usuario.bilhete}%0A`;
+        texto += `Número: ${usuario.numero}%0A`;
+        texto += `Email: ${usuario.email}%0A%0A`;
+        texto += `📌 *DETALHES DO PAGAMENTO*%0A`;
+        texto += `Data/Hora: ${document.getElementById('pagHora').value}%0A`;
+        texto += `Valor pago: ${divida.valorPagar} MT (Nível ${divida.nivelId})%0A`;
+        texto += `Comprovativo: ${mensagemPag}%0A%0A`;
+        texto += `✅ Pagamento registado para aprovação.`;
+        
+        enviarWhatsApp(texto);
+        
+        // Atualizar progresso
+        const nivelAtualObj = niveis.find(n=> n.id === usuario.nivelAtual);
+        if(nivelAtualObj) {
+            usuario.emprestimosFeitosNoNivel = (usuario.emprestimosFeitosNoNivel || 0) + 1;
+            if(usuario.emprestimosFeitosNoNivel >= nivelAtualObj.qtdParaLiberar && usuario.nivelAtual < 10) {
+                usuario.nivelAtual++;
+                usuario.emprestimosFeitosNoNivel = 0;
+                alert(`🎉 Parabéns! Subiu para ${niveis.find(n=>n.id === usuario.nivelAtual)?.nome || 'Nível máximo'}!`);
+            }
+        }
+        usuario.dividaAtiva = null;
+        saveUserToStorage();
+        document.getElementById('paymentModal').style.display = 'none';
+        document.body.style.overflow = 'auto';
+        renderizarNiveis();
+        atualizarDividaUI();
+        alert("✅ Comprovativo enviado! Aguarde confirmação do pagamento.");
+        document.getElementById('msgPagamento').value = "";
+    }
+
+    // Cadastro
+    function handleCadastro(e) {
+        e.preventDefault();
+        const nome = document.getElementById('nomeCompleto').value;
+        const bilhete = document.getElementById('numBilhete').value;
+        const nasc = document.getElementById('dataNasc').value;
+        const provincia = document.getElementById('provincia').value;
+        const distrito = document.getElementById('distrito').value;
+        const bairro = document.getElementById('bairro').value;
+        const numero = document.getElementById('numeroCliente').value;
+        const email = document.getElementById('emailCliente').value;
+        
+        if(!nome || !bilhete || !provincia || !distrito || !bairro || !numero || !email) {
+            return alert("Preencha todos os campos");
+        }
+        
+        usuario = {
+            nome, 
+            bilhete, 
+            nascimento: nasc, 
+            provincia, 
+            distrito,
+            bairro,
+            numero, 
+            email,
+            nivelAtual: 1,
+            emprestimosFeitosNoNivel: 0,
+            dividaAtiva: null,
+            _dataCadastro: new Date().toISOString()
+        };
+        saveUserToStorage();
+        document.getElementById('cadastroSection').style.display = 'none';
+        document.getElementById('dashboardSection').style.display = 'block';
+        renderizarNiveis();
+        atualizarDividaUI();
+        alert("✅ Cadastro realizado com sucesso! Seus dados foram salvos permanentemente.");
+    }
+
+    // Inicialização
+    window.addEventListener('load', () => {
+        carregarProvincias();
+        setTimeout(() => {
+            document.getElementById('loader-wrapper').style.opacity = '0';
+            setTimeout(() => {
+                document.getElementById('loader-wrapper').style.display = 'none';
+                document.getElementById('main-app').style.display = 'block';
+                if(loadUserFromStorage() && usuario) {
+                    document.getElementById('cadastroSection').style.display = 'none';
+                    document.getElementById('dashboardSection').style.display = 'block';
+                    renderizarNiveis();
+                    atualizarDividaUI();
+                } else {
+                    document.getElementById('cadastroSection').style.display = 'block';
+                    document.getElementById('dashboardSection').style.display = 'none';
+                }
+            }, 400);
+        }, 1500);
+    });
+
+    // Event listeners
+    document.getElementById('cadastroForm')?.addEventListener('submit', handleCadastro);
+    document.getElementById('pagarDebtBtn')?.addEventListener('click', iniciarPagamento);
+    document.getElementById('sendPaymentWhatsBtn')?.addEventListener('click', enviarPagamentoWhats);
+    document.getElementById('closeModalBtn')?.addEventListener('click', () => {
+        document.getElementById('paymentModal').style.display = 'none';
+        document.body.style.overflow = 'auto';
+    });
+    document.getElementById('closePaymentModal')?.addEventListener('click', () => {
+        document.getElementById('paymentModal').style.display = 'none';
+        document.body.style.overflow = 'auto';
+    });
+    
+    // Event listeners do modal de empréstimo
+    document.getElementById('closeLoanModal')?.addEventListener('click', fecharModalEmprestimo);
+    document.getElementById('cancelLoanBtn')?.addEventListener('click', fecharModalEmprestimo);
+    document.getElementById('confirmLoanBtn')?.addEventListener('click', confirmarEnvioWhatsApp);
+
+    // Fechar modais clicando fora
+    document.getElementById('paymentModal')?.addEventListener('click', (e) => {
+        if(e.target === e.currentTarget) {
+            document.getElementById('paymentModal').style.display = 'none';
+            document.body.style.overflow = 'auto';
+        }
+    });
+    
+    document.getElementById('loanModal')?.addEventListener('click', (e) => {
+        if(e.target === e.currentTarget) {
+            fecharModalEmprestimo();
+        }
+    });
+</script>
+</body>
+</html>
