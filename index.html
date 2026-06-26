@@ -374,6 +374,16 @@
             color: rgba(245,176,66,0.5);
         }
 
+        .card-detail-item .detail-value.overdue {
+            color: #dc3545 !important;
+            animation: blink 1s ease-in-out infinite;
+        }
+
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
         .card-footer-premium {
             display: flex;
             justify-content: space-between;
@@ -423,6 +433,20 @@
             font-weight: 700;
         }
 
+        .days-text.overdue strong {
+            color: #dc3545;
+        }
+
+        .late-fee {
+            color: #dc3545;
+            font-size: 0.65rem;
+            font-weight: 600;
+            background: rgba(220, 53, 69, 0.15);
+            padding: 2px 10px;
+            border-radius: 12px;
+            border: 1px solid rgba(220, 53, 69, 0.2);
+        }
+
         .loan-progress {
             margin-top: 16px;
             padding-top: 16px;
@@ -446,6 +470,10 @@
             transition: width 0.6s ease;
         }
 
+        .progress-bar-fill.overdue {
+            background: linear-gradient(90deg, #dc3545, #ff6b6b);
+        }
+
         .progress-info {
             display: flex;
             justify-content: space-between;
@@ -457,6 +485,10 @@
 
         .progress-info span:last-child {
             color: rgba(245,176,66,0.6);
+        }
+
+        .progress-info span:last-child.overdue {
+            color: #dc3545;
         }
 
         .btn-pagar.premium-btn {
@@ -484,6 +516,18 @@
 
         .btn-pagar.premium-btn:active {
             transform: scale(0.97);
+        }
+
+        .btn-pagar.premium-btn.overdue-btn {
+            background: linear-gradient(135deg, #dc3545, #c82333);
+            color: white;
+            box-shadow: 0 4px 20px rgba(220, 53, 69, 0.3);
+            animation: pulse-btn 1.5s ease-in-out infinite;
+        }
+
+        @keyframes pulse-btn {
+            0%, 100% { box-shadow: 0 4px 20px rgba(220, 53, 69, 0.3); }
+            50% { box-shadow: 0 4px 30px rgba(220, 53, 69, 0.6); }
         }
 
         .btn-icon {
@@ -686,13 +730,13 @@
                 </div>
                 <form id="cadastroForm">
                     <div class="form-group"><label>Nome completo (como no Bilhete)</label><input type="text" id="nomeCompleto" required placeholder="Insira nome"></div>
-                    <div class="form-group"><label>Número do Bilhete</label><input type="text" id="numBilhete" required placeholder="84 ou 85"></div>
+                    <div class="form-group"><label>Número do Bilhete</label><input type="text" id="numBilhete" required placeholder="Insira o número"></div>
                     <div class="form-group"><label>Data de Nascimento</label><input type="date" id="dataNasc" required></div>
                     <div class="form-group"><label>Província</label><select id="provincia" required></select></div>
                     <div class="form-group"><label>Distrito</label><select id="distrito" required><option value="">Selecione primeiro a província</option></select></div>
                     <div class="form-group"><label>Bairro</label><input type="text" id="bairro" placeholder="Digite o nome do seu bairro" required></div>
                     <div class="form-group"><label>Número do cliente (receber dinheiro)</label><input type="tel" id="numeroCliente" required placeholder="84 ou 85XXXXXX"></div>
-                    <div class="form-group"><label>Email do cliente</label><input type="email" id="emailCliente" required placeholder="g@email.com"></div>
+                    <div class="form-group"><label>Email do cliente</label><input type="email" id="emailCliente" required placeholder="g@mail.com"></div>
                     <button type="submit">✅ Finalizar Cadastro</button>
                 </form>
             </div>
@@ -741,12 +785,12 @@
                             </svg>
                         </div>
                         <div class="card-brand-logo">
-                            <span class="brand-text">TAKO</span>
-                            <span class="brand-sub">F I N A N C E</span>
+                            <span class="brand-text">TAKO NA HORA</span>
+                            <span class="brand-sub">EMPRÉSTIMO</span>
                         </div>
                         <div class="card-type">
                             <span>💳</span>
-                            <span class="visa-text">VISA</span>
+                            <span class="visa-text">CARTÃO VIRTUAL</span>
                         </div>
                     </div>
 
@@ -780,9 +824,20 @@
                             <span class="status-indicator active" id="debtCardStatus"></span>
                             <span class="status-text" id="debtCardStatusText">ATIVO</span>
                         </div>
-                        <div class="days-container">
+                        <div class="days-container" id="debtDaysContainer">
                             <span class="days-icon">⏳</span>
                             <span class="days-text" id="debtCardDays"><strong>0</strong> dias restantes</span>
+                        </div>
+                    </div>
+
+                    <!-- Taxa de atraso - visível apenas em atraso -->
+                    <div id="lateFeeContainer" style="display:none; margin-top: 12px; padding: 8px 12px; background: rgba(220, 53, 69, 0.1); border-radius: 12px; border: 1px solid rgba(220, 53, 69, 0.2); position: relative; z-index: 1;">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <span style="color: #dc3545; font-size: 0.7rem; font-weight: 600;">⚠️ TAXA DE ATRASO</span>
+                            <span style="color: #dc3545; font-size: 0.8rem; font-weight: 700;" id="lateFeeAmount">+0 MT</span>
+                        </div>
+                        <div style="font-size: 0.6rem; color: rgba(220, 53, 69, 0.7); margin-top: 4px;">
+                            2 MT por dia de atraso · <span id="lateFeeDays">0</span> dias em atraso
                         </div>
                     </div>
 
@@ -851,12 +906,12 @@
         </div>
         <form id="pagamentoFormulario">
             <div class="form-group"><label>Mensagem de pagamento (comprovativo)</label>
-                <textarea id="msgPagamento" rows="3" Insira mensagem do pagamento" style="border-radius:20px;"></textarea>
+                <textarea id="msgPagamento" rows="3" placeholder="Insira mensagem do pagamento" style="border-radius:20px;"></textarea>
             </div>
             <div class="form-group"><label>Nome do Cliente</label><input id="pagNome" readonly></div>
             <div class="form-group"><label>Data/Hora</label><input id="pagHora" readonly></div>
             <div class="form-group"><label>Número do cliente</label><input id="pagNumero" readonly></div>
-            <div class="form-group"><label>Valor a pagar</label><input id="pagValor" readonly></div>
+            <div class="form-group"><label>Valor a pagar (com taxas)</label><input id="pagValor" readonly></div>
             <button type="button" id="sendPaymentWhatsBtn" class="btn-whatsapp">📲 Enviar Pagamento via WhatsApp</button>
             <button type="button" id="closeModalBtn" style="background:#ccc; margin-top:10px;">Cancelar</button>
         </form>
@@ -884,6 +939,9 @@
     // Variáveis de estado do usuário (persiste no localStorage)
     let usuario = null;
     let nivelSelecionado = null;
+
+    // Taxa de atraso por dia (fixa para todos os níveis)
+    const TAXA_ATRASO_DIA = 2;
 
     function saveUserToStorage() { 
         if(usuario) {
@@ -937,6 +995,28 @@
         });
     }
 
+    // Função para calcular dias em atraso e taxa
+    function calcularTaxaAtraso(divida) {
+        if (!divida) return { diasAtraso: 0, taxa: 0, valorTotal: divida?.valorPagar || 0 };
+        
+        const dataLimite = new Date(divida.dataLimite);
+        const hoje = new Date();
+        const diffTime = hoje - dataLimite;
+        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+        
+        // Se não ultrapassou a data, não há atraso
+        if (diffDays <= 0) {
+            return { diasAtraso: 0, taxa: 0, valorTotal: divida.valorPagar };
+        }
+        
+        const taxa = diffDays * TAXA_ATRASO_DIA;
+        return { 
+            diasAtraso: diffDays, 
+            taxa: taxa, 
+            valorTotal: divida.valorPagar + taxa 
+        };
+    }
+
     // Atualizar interface de níveis
     function renderizarNiveis() {
         if(!usuario) return;
@@ -987,6 +1067,10 @@
             <div class="info-detail"><span class="label">💸 Total a pagar:</span><span class="value">${level.pagamento} MT</span></div>
             <div class="info-detail"><span class="label">📈 Juro:</span><span class="value">${level.juro} MT</span></div>
             <div class="info-detail"><span class="label">⏳ Prazo:</span><span class="value">${level.duracao} dias</span></div>
+            <div class="info-detail" style="background:#fff3cd; border:1px solid #ffc107;">
+                <span class="label">⚠️ Taxa de atraso:</span>
+                <span class="value" style="color:#856404;">${TAXA_ATRASO_DIA} MT por dia após vencimento</span>
+            </div>
         `;
         document.getElementById('loanSummaryDetails').innerHTML = summaryHTML;
         
@@ -1019,7 +1103,8 @@
             juro: nivelSelecionado.juro,
             dataInicio: dataInicio.toISOString(),
             dataLimite: dataFim.toISOString(),
-            diasRestantes: nivelSelecionado.duracao
+            diasRestantes: nivelSelecionado.duracao,
+            taxaAtrasoAcumulada: 0
         };
         saveUserToStorage();
         atualizarDividaUI();
@@ -1052,6 +1137,7 @@
         msg += `💸 Total a pagar: ${level.pagamento} MT%0A`;
         msg += `📈 Juro: ${level.juro} MT%0A`;
         msg += `⏳ Prazo: ${level.duracao} dias%0A`;
+        msg += `⚠️ Taxa de atraso: ${TAXA_ATRASO_DIA} MT/dia após vencimento%0A`;
         msg += `📅 Data solicitação: ${new Date().toLocaleString()}`;
         return msg;
     }
@@ -1064,20 +1150,38 @@
 
     function atualizarDividaUI() {
         const divDebt = document.getElementById('debtCardPanel');
+        const lateFeeContainer = document.getElementById('lateFeeContainer');
+        
         if(usuario && usuario.dividaAtiva) {
             divDebt.style.display = 'block';
             const d = usuario.dividaAtiva;
             const dataLimite = new Date(d.dataLimite);
             const hoje = new Date();
+            
+            // Calcular atraso e taxa
+            const { diasAtraso, taxa, valorTotal } = calcularTaxaAtraso(d);
             const diffDays = Math.ceil((dataLimite - hoje) / (1000*60*60*24));
             const diasRestantes = diffDays > 0 ? diffDays : 0;
             const totalDias = niveis.find(n => n.id === d.nivelId)?.duracao || 30;
             const progresso = ((totalDias - diasRestantes) / totalDias) * 100;
+            const estaAtrasado = diasAtraso > 0;
             
             // Atualizar elementos do cartão
             document.getElementById('cardLastDigits').textContent = String(2026 + d.nivelId).slice(-4);
             document.getElementById('debtCardHolder').textContent = usuario.nome.toUpperCase();
-            document.getElementById('debtCardValue').textContent = `${d.valorPagar} MT`;
+            
+            // Mostrar valor com taxa de atraso se houver
+            const valorDisplay = estaAtrasado ? `${valorTotal} MT` : `${d.valorPagar} MT`;
+            document.getElementById('debtCardValue').textContent = valorDisplay;
+            
+            // Se estiver em atraso, adicionar classe de destaque
+            const valorElement = document.querySelector('.card-detail-item.highlight .detail-value');
+            if (estaAtrasado) {
+                valorElement.classList.add('overdue');
+            } else {
+                valorElement.classList.remove('overdue');
+            }
+            
             document.getElementById('debtCardDue').textContent = dataLimite.toLocaleDateString('pt-PT', { 
                 day: '2-digit', 
                 month: 'short', 
@@ -1089,25 +1193,63 @@
             const statusText = document.getElementById('debtCardStatusText');
             const progressFill = document.getElementById('debtProgressBar');
             const progressPercent = document.getElementById('debtProgressPercent');
+            const daysText = document.getElementById('debtCardDays');
+            const daysContainer = document.getElementById('debtDaysContainer');
+            const pagarBtn = document.getElementById('pagarDebtBtn');
             
-            progressFill.style.width = `${Math.min(100, progresso)}%`;
-            progressPercent.textContent = `${Math.round(Math.min(100, progresso))}%`;
+            // Progresso
+            const progressPercentValue = Math.min(100, progresso);
+            progressFill.style.width = `${progressPercentValue}%`;
+            progressPercent.textContent = `${Math.round(progressPercentValue)}%`;
             
-            if(diasRestantes <= 3 && diasRestantes > 0) {
-                statusIndicator.className = 'status-indicator warning';
-                statusText.textContent = 'PRÓXIMO VENCIMENTO';
-                statusText.style.color = '#ffc107';
-            } else if(diasRestantes === 0) {
+            if (estaAtrasado) {
+                // Em atraso
+                progressFill.classList.add('overdue');
+                progressPercent.classList.add('overdue');
                 statusIndicator.className = 'status-indicator danger';
                 statusText.textContent = 'VENCIDO';
                 statusText.style.color = '#dc3545';
+                daysText.innerHTML = `<strong>${diasAtraso}</strong> dia(s) em atraso`;
+                daysText.classList.add('overdue');
+                daysContainer.querySelector('.days-icon').textContent = '⚠️';
+                
+                // Mostrar taxa de atraso
+                lateFeeContainer.style.display = 'block';
+                document.getElementById('lateFeeAmount').textContent = `+${taxa} MT`;
+                document.getElementById('lateFeeDays').textContent = diasAtraso;
+                
+                // Botão de pagamento em destaque
+                pagarBtn.classList.add('overdue-btn');
+                pagarBtn.innerHTML = `<span class="btn-icon">⚠️</span> Pagar ${valorTotal} MT (com multa)`;
+                
+            } else if (diasRestantes <= 3 && diasRestantes > 0) {
+                // Próximo ao vencimento
+                progressFill.classList.remove('overdue');
+                progressPercent.classList.remove('overdue');
+                statusIndicator.className = 'status-indicator warning';
+                statusText.textContent = 'PRÓXIMO VENCIMENTO';
+                statusText.style.color = '#ffc107';
+                daysText.innerHTML = `<strong>${diasRestantes}</strong> dias restantes`;
+                daysText.classList.remove('overdue');
+                daysContainer.querySelector('.days-icon').textContent = '⏳';
+                lateFeeContainer.style.display = 'none';
+                pagarBtn.classList.remove('overdue-btn');
+                pagarBtn.innerHTML = `<span class="btn-icon">💸</span> Fazer Pagamento via WhatsApp`;
+                
             } else {
+                // Normal
+                progressFill.classList.remove('overdue');
+                progressPercent.classList.remove('overdue');
                 statusIndicator.className = 'status-indicator active';
                 statusText.textContent = 'ATIVO';
                 statusText.style.color = '#28a745';
+                daysText.innerHTML = `<strong>${diasRestantes}</strong> dias restantes`;
+                daysText.classList.remove('overdue');
+                daysContainer.querySelector('.days-icon').textContent = '⏳';
+                lateFeeContainer.style.display = 'none';
+                pagarBtn.classList.remove('overdue-btn');
+                pagarBtn.innerHTML = `<span class="btn-icon">💸</span> Fazer Pagamento via WhatsApp`;
             }
-            
-            document.getElementById('debtCardDays').innerHTML = `<strong>${diasRestantes}</strong> dias restantes`;
             
         } else {
             divDebt.style.display = 'none';
@@ -1122,7 +1264,11 @@
         const horaStr = agora.toLocaleString();
         document.getElementById('pagHora').value = horaStr;
         document.getElementById('pagNumero').value = usuario.numero;
-        document.getElementById('pagValor').value = usuario.dividaAtiva.valorPagar + " MT";
+        
+        // Calcular valor com taxa de atraso
+        const { valorTotal } = calcularTaxaAtraso(usuario.dividaAtiva);
+        document.getElementById('pagValor').value = valorTotal + " MT";
+        
         document.getElementById('msgPagamento').value = '';
         modal.style.display = 'flex';
         document.body.style.overflow = 'hidden';
@@ -1134,7 +1280,11 @@
         const divida = usuario.dividaAtiva;
         if(!divida) return alert("Sem dívida ativa.");
         
-        let texto = `*TAKO NA HORA- PAGAMENTO DE EMPRÉSTIMO*%0A%0A`;
+        // Calcular valor com taxa
+        const { valorTotal, diasAtraso, taxa } = calcularTaxaAtraso(divida);
+        const estaAtrasado = diasAtraso > 0;
+        
+        let texto = `*TAKO NA HORA - PAGAMENTO DE EMPRÉSTIMO*%0A%0A`;
         texto += `📌 *DADOS DO CLIENTE*%0A`;
         texto += `Nome: ${usuario.nome}%0A`;
         texto += `Nº Bilhete: ${usuario.bilhete}%0A`;
@@ -1142,7 +1292,10 @@
         texto += `Email: ${usuario.email}%0A%0A`;
         texto += `📌 *DETALHES DO PAGAMENTO*%0A`;
         texto += `Data/Hora: ${document.getElementById('pagHora').value}%0A`;
-        texto += `Valor pago: ${divida.valorPagar} MT (Nível ${divida.nivelId})%0A`;
+        texto += `Valor pago: ${valorTotal} MT (Nível ${divida.nivelId})%0A`;
+        if (estaAtrasado) {
+            texto += `⚠️ Taxa de atraso: ${taxa} MT (${diasAtraso} dias em atraso)%0A`;
+        }
         texto += `Comprovativo: ${mensagemPag}%0A%0A`;
         texto += `✅ Pagamento registado para aprovação.`;
         
@@ -1258,6 +1411,13 @@
             fecharModalEmprestimo();
         }
     });
+
+    // Atualizar a UI a cada minuto para recalcular taxas
+    setInterval(() => {
+        if (usuario && usuario.dividaAtiva) {
+            atualizarDividaUI();
+        }
+    }, 60000); // Verifica a cada 60 segundos
 </script>
 </body>
-</html>
+</html> u
